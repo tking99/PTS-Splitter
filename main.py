@@ -15,6 +15,7 @@ from models import ImportedFileOrgainser
 
 
 class PTSSplitter(tk.Tk):
+    DEFAULT_GRID = 'default_files/Grids_All.csv'
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.geometry("500x500")
@@ -22,7 +23,7 @@ class PTSSplitter(tk.Tk):
         self.rowconfigure(0, weight=1)
         self.title('PTS Splitter')
         # auto read grids into system - no checking has been applied
-        self.wgrids = GridImporter.read('Grids_All.csv')
+        self.wgrids = GridImporter.read(self.DEFAULT_GRID)
         self.pts_files = []
         self.import_orgainser = ImportedFileOrgainser()
         self.main_frame = MainDisplay(self)
@@ -48,7 +49,7 @@ class PTSSplitter(tk.Tk):
             exit()  
       
      
-end_trial = datetime.strptime('01-07-2023', '%d-%m-%Y')
+end_trial = datetime.strptime('01-08-2023', '%d-%m-%Y')
 
 if __name__ == "__main__":
     if datetime.today() < end_trial:
