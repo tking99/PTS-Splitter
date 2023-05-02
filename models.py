@@ -12,9 +12,9 @@ class SubGrid:
     def sub_grid_name(cls, x, y):
         """returns a string of the sub grid name"""
         if cls.LEADING:
-            return f'{x[0:cls.NAME_PLACES]}-{y[0:cls.NAME_PLACES]}'
+            return f'{x[0:cls.NAME_PLACES]}{y[0:cls.NAME_PLACES]}'
         
-        return f'{x[1:cls.NAME_PLACES]}-{y[1:cls.NAME_PLACES]}'
+        return f'{x[1:cls.NAME_PLACES]}{y[1:cls.NAME_PLACES]}'
 
 
 

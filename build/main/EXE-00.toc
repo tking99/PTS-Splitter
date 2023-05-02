@@ -1,5 +1,5 @@
 ('C:\\Users\\bc975706\\Documents\\Software\\PTS Splitter\\dist\\main.exe',
- True,
+ False,
  False,
  False,
  ['C:\\Users\\bc975706\\Documents\\Software\\PTS Splitter\\split.ico'],
@@ -3158,8 +3158,8 @@
  [],
  False,
  False,
- 1682946715,
- [('run.exe',
+ 1682947014,
+ [('runw.exe',
    'c:\\users\\bc975706\\documents\\software\\pts '
-   'splitter\\venv\\lib\\site-packages\\PyInstaller\\bootloader\\Windows-32bit-intel\\run.exe',
+   'splitter\\venv\\lib\\site-packages\\PyInstaller\\bootloader\\Windows-32bit-intel\\runw.exe',
    'EXECUTABLE')])

@@ -21,7 +21,7 @@ class PTSSplitter(tk.Tk):
         self.geometry("500x500")
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
-        self.title('PTS Splitter')
+        self.title('Grid Splitter')
         # auto read grids into system - no checking has been applied
         self.wgrids = GridImporter.read(self.DEFAULT_GRID)
         self.pts_files = []

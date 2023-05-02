@@ -3,6 +3,7 @@ import datetime as dt
 import tkinter as tk 
 from tkinter import ttk
 from tkinter.filedialog import askopenfilenames, askdirectory
+from tkcalendar import Calendar, DateEntry
 from threading import Thread
 
 from models import ImportedFile
@@ -10,7 +11,7 @@ from processer import PTSFileProcessor
 
 
 class MainDisplay(ttk.Frame):
-    ALLOWED_FILE_TYPES = (('PTS', '.pts'),)
+    ALLOWED_FILE_TYPES = (('PTS', '.pts'), ('XYZ', '.xyz'), ('CSV', '.csv'), ('TXT', '.txt'))
     GRID_OPTIONS = ('1000', '500', '100', '50', '20') 
 
     def __init__(self, controller, *args, **kwargs):
@@ -20,7 +21,7 @@ class MainDisplay(ttk.Frame):
         self.import_frame.grid(column=0, row=0, sticky='NW')
         self.pts_processor = PTSFileProcessor(self.controller.import_orgainser, self.controller)
 
-        ttk.Label(self.import_frame, text='Step 1: Select PTS Files to Split:').grid(column=0, row=0, padx=5, pady=5)
+        ttk.Label(self.import_frame, text='Step 1: Select ASCII Files to Split:').grid(column=0, row=0, padx=5, pady=5)
         ttk.Button(self.import_frame, text='Select', command=self.import_files).grid(column=1, row=0, padx=5, pady=5)
 
         self.import_tree_display = ttk.Frame(self)
@@ -52,26 +53,28 @@ class MainDisplay(ttk.Frame):
             offvalue=False, state= "disabled").grid(column=0, row=1, pady=5, padx=5, sticky='NW')
         ttk.Label(self.option_choices_frame, text='Split by File Size (MB)').grid(column=1, row=1)
 
-        
+        ttk.Separator(self, orient=tk.HORIZONTAL).grid(column=0, row=4, columnspan=10, sticky='EW')
         
         description_frame = ttk.Frame(self)
-        description_frame.grid(column=0, row=4, sticky='NW')
+        description_frame.grid(column=0, row=5, sticky='NW')
+        ttk.Label(description_frame, text='Step 3: Add Description').grid(column=0, row=0, padx=5, pady=5, sticky='NW') 
 
         self.description = tk.StringVar()
         self.survey_type = tk.StringVar()
-        ttk.Label(description_frame, text='Add Survey Description: ').grid(column=0, row=0, sticky='NW', pady=5, padx=5)
+        ttk.Label(description_frame, text='Survey Description: ').grid(column=0, row=1, sticky='NW', pady=5, padx=5)
         ttk.Entry(description_frame, width=30, textvariable=self.description).grid(
-            column=1, row=0, sticky='NW', pady=5, padx=5)
-        ttk.Label(description_frame, text='Add Survey Type: ').grid(column=0, row=1, sticky='NW', pady=5, padx=5)
-        ttk.Entry(description_frame, width=30, textvariable=self.survey_type).grid(
             column=1, row=1, sticky='NW', pady=5, padx=5)
+        ttk.Label(description_frame, text='Survey Type: ').grid(column=0, row=2, sticky='NW', pady=5, padx=5)
+        ttk.Entry(description_frame, width=30, textvariable=self.survey_type).grid(
+            column=1, row=2, sticky='NW', pady=5, padx=5)
 
-        
-
-
-
+        ttk.Label(description_frame, text='Date of Survey: ').grid(column=0, row=3, sticky='NW', pady=5, padx=5)
+        self.date_picker = DateEntry(description_frame, width=12, background='darkblue',
+                    foreground='white', borderwidth=2)
+        self.date_picker.grid(column=1, row=3, sticky='NW', pady=5, padx=5)
+      
         self.export_frame = ttk.Frame(self)
-        self.export_frame.grid(column=0, row=6, sticky='NW')
+        self.export_frame.grid(column=0, row=7, sticky='NW')
         ttk.Button(self.export_frame, text='SPLIT', command=self.split).grid(column=0, row=0, sticky='NW',
             pady=20, padx=5)
 
@@ -85,7 +88,8 @@ class MainDisplay(ttk.Frame):
                 self.start_time = datetime.now()   
                 self.progressbar.start()
                 # main task
-                t = Thread(target=lambda: self.pts_processor.process_files(directory, self.grid_size.get(), self.description.get(), self.survey_type.get()),)
+                t = Thread(target=lambda: self.pts_processor.process_files(directory, self.grid_size.get(), self.description.get(), self.survey_type.get(),
+                    self.date_picker.get_date()),)
                 t.start()
                 self.schedule_check(t)
         else:
