@@ -10,8 +10,9 @@ from tkinter import messagebox
 from tkinter.filedialog import askopenfilenames
 
 from importers import GridImporter
-from display import MainDisplay
+from display import GridSplitterDisplay, PodExcellWritterDisplay
 from models import ImportedFileOrgainser
+from navigation import MainNavbar
 
 
 class PTSSplitter(tk.Tk):
@@ -24,12 +25,32 @@ class PTSSplitter(tk.Tk):
         self.title('Grid Splitter')
         # auto read grids into system - no checking has been applied
         self.wgrids = GridImporter.read(self.DEFAULT_GRID)
+        self.nav_menu = MainNavbar(self, tearoff=0)
+        self.config(menu=self.nav_menu)
         self.pts_files = []
         self.import_orgainser = ImportedFileOrgainser()
-        self.main_frame = MainDisplay(self)
-        self.main_frame.grid(column=0, row=0, padx=5, pady=5, sticky='NESW')
+        self.import_pod_orgainser = ImportedFileOrgainser()
+        self.main_frame = None
+        self.grid_splitter()
         self.current_wgrid = None 
         
+    def refresh_main(self):
+        if self.main_frame is not None:
+            self.main_frame.grid_forget()
+            self.main_frame.destroy()
+    
+    def grid_splitter(self):
+        self.refresh_main()
+        self.main_frame = GridSplitterDisplay(self)
+        self.main_frame.grid(column=0, row=0, padx=5, pady=5, sticky='NESW')
+
+    def pod_uploader(self):
+        self.refresh_main()
+        self.main_frame = PodExcellWritterDisplay(self)
+        self.main_frame.grid(column=0, row=0, padx=5, pady=5, sticky='NESW')
+       
+    
+    
     def get_wgrid(self, x, y):
         # check first if current grid is correct and probably will be
         if self.current_wgrid is not None and self.current_wgrid.check_point(x, y):

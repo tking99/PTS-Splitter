@@ -128,7 +128,6 @@ class ImportedFile:
 
 
 class ImportedFileOrgainser: 
-    ALLOWED_FILE_TYPES = (('PTS', '.pts'),) 
     def __init__(self):
         # holds a list of paths 
         self.imported_files = []
@@ -157,10 +156,6 @@ class ImportedFileOrgainser:
     def remove_file(self, file_path):
         if self.check_path_exists(file_path):
             self.imported_files.remove(file_path)
-
-    def check_file_type_allowed(self, file_path):
-        """checks the format file is an allowed type before import"""
-        return file_path.split('.')[-1].lower() in self.ALLOWED_FILE_TYPES
       
     def check_path_exists(self, file_path):
         for f in self.imported_files:

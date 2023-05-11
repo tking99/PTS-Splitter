@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\bc975706\Documents\Software\PTS Splitter\venv"
+VIRTUAL_ENV="C:\Users\bc975706\Documents\Software\Grid Splitter\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

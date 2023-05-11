@@ -8,7 +8,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[(r"C:\Users\bc975706\Documents\Software\PTS Splitter\default_files\Grids_All.csv",
+    datas=[(r"C:\Users\bc975706\Documents\Software\GRID Splitter\default_files\Grids_All.csv",
     "default_files")],
     hiddenimports=[],
     hookspath=[],
