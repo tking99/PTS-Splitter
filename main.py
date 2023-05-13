@@ -49,8 +49,6 @@ class PTSSplitter(tk.Tk):
         self.main_frame = PodExcellWritterDisplay(self)
         self.main_frame.grid(column=0, row=0, padx=5, pady=5, sticky='NESW')
        
-    
-    
     def get_wgrid(self, x, y):
         # check first if current grid is correct and probably will be
         if self.current_wgrid is not None and self.current_wgrid.check_point(x, y):

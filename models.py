@@ -168,4 +168,4 @@ class ImportedFileOrgainser:
             yield f
 
     def __len__(self):
-        return len(self.imported_files)
+        return sum(1 for f in self.imported_files if f.file_active)

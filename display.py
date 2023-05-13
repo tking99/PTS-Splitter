@@ -1,13 +1,15 @@
+from pathlib import Path
 from datetime import datetime
 import datetime as dt
 import tkinter as tk 
 from tkinter import ttk
-from tkinter.filedialog import askopenfilenames, askdirectory
+from tkinter import messagebox
+from tkinter.filedialog import askopenfilename, askopenfilenames, askdirectory
 from tkcalendar import Calendar, DateEntry
 from threading import Thread
 
 from models import ImportedFile
-from processer import PTSFileProcessor
+from processer import PTSFileProcessor, ProjectWiseWritter
 
 
 class GridSplitterDisplay(ttk.Frame):
@@ -42,16 +44,16 @@ class GridSplitterDisplay(ttk.Frame):
         self.option_choices_frame = ttk.Frame(self.options_frame)
         self.option_choices_frame.grid(column=0, row=1, sticky='NW')
         ttk.Checkbutton(self.option_choices_frame, variable=self.split_by_grid, onvalue=True,
-            offvalue=False).grid(column=0, row=0, pady=5, padx=5, sticky='NW')
-        ttk.Label(self.option_choices_frame, text='Split by SCS Grid').grid(column=1, row=0, sticky='NW')
-        ttk.Label(self.option_choices_frame, text='Grid Size:').grid(column=2, row=0, sticky='NW')
+            offvalue=False, state= "disabled").grid(column=0, row=0, pady=5, padx=5, sticky='NW')
+        ttk.Label(self.option_choices_frame, text='Split by SCS Grid').grid(column=1, row=0, sticky='NW', padx=5, pady=5)
+        ttk.Label(self.option_choices_frame, text='Grid Size:').grid(column=2, row=0, sticky='NW', padx=5, pady=5)
         self.grid_size = tk.StringVar()
         option_menu = ttk.OptionMenu(
             self.option_choices_frame,
             self.grid_size,
             self.GRID_OPTIONS[0],
             *self.GRID_OPTIONS)
-        option_menu.grid(column=3, row=0, sticky='NW')
+        option_menu.grid(column=3, row=0, sticky='NW', padx=5, pady=5)
 
         ttk.Checkbutton(self.option_choices_frame, variable=self.split_by_mb, onvalue=True,
             offvalue=False, state= "disabled").grid(column=0, row=1, pady=5, padx=5, sticky='NW')
@@ -86,7 +88,7 @@ class GridSplitterDisplay(ttk.Frame):
         self.export_frame = ttk.Frame(self)
         self.export_frame.grid(column=0, row=7, sticky='NW')
         ttk.Button(self.export_frame, text='SPLIT FILES', command=self.split,
-            padding=(10,10)).grid(column=0, row=0, sticky='NW',
+            padding=(25,10)).grid(column=0, row=1, sticky='NW',
             pady=20, padx=5) 
 
     def split(self):
@@ -94,8 +96,8 @@ class GridSplitterDisplay(ttk.Frame):
         if len(self.controller.import_orgainser) > 0:
             directory = askdirectory()
             if directory:
-                self.progressbar = ttk.Progressbar(self, length=200, mode="indeterminate")
-                self.progressbar.grid(column=0, row=5, sticky='NW')
+                self.progressbar = ttk.Progressbar(self.export_frame, length=200, mode="indeterminate")
+                self.progressbar.grid(column=0, row=0, sticky='NW')
                 self.start_time = datetime.now()   
                 self.progressbar.start()
                 # main task
@@ -177,16 +179,15 @@ class GridSplitterDisplay(ttk.Frame):
         return var
 
 
-
-
 class PodExcellWritterDisplay(ttk.Frame):
     ALLOWED_POD_FILE_TYPE = (('POD', '.pod'), )
+    ALLOWED_EXCEL_FILE_TYPE = (('XLSX', '.xlsx'), )
     ISSUE_PURPOSE = ('FOR INFORMATION', 'ISSUED FOR HANDOVER')
 
     def __init__(self, controller, *args, **kwargs):
         super().__init__(controller, *args, **kwargs)
         self.controller = controller
-
+        self.excel_file = None
         pod_uploader_frame = ttk.Frame(self)
         pod_uploader_frame.grid(column=0, row=0, sticky='NW')
         ttk.Label(pod_uploader_frame, text='Pod Excel Uploader', font=("Arial", 12)).grid(column=0, row=0, sticky='NW', padx=5, pady=5)
@@ -231,15 +232,35 @@ class PodExcellWritterDisplay(ttk.Frame):
         self.excel_frame.grid(column=0, row=4, sticky='NW')
         ttk.Label(self.excel_frame, text='Step 3: Select PW Excel File').grid(column=0, row=0, sticky='NW',
             padx=5, pady=5)
-        ttk.Button(self.excel_frame, text='Select').grid(column=1, row=0, padx=5, pady=5)
+        ttk.Button(self.excel_frame, text='Select', command=self.set_excel_file).grid(column=1, row=0, padx=5, pady=5)
 
         ttk.Separator(self, orient=tk.HORIZONTAL).grid(column=0, row=5, columnspan=10, sticky='ew', pady=6)
         
         self.export_frame = ttk.Frame(self)
         self.export_frame.grid(column=0, row=6, sticky='NW')
-        ttk.Button(self.export_frame, text='UPLOAD TO EXCEL', padding=(10,10)).grid(column=0, row=0, sticky='NW',
-            pady=20, padx=5)
+        ttk.Button(self.export_frame, text='UPLOAD TO EXCEL', command=self.upload_to_excel,
+             padding=(25,10)).grid(column=0, row=0, sticky='NW',
+                pady=20, padx=5)
 
+    def set_excel_file(self):
+        f = askopenfilename(filetypes=self.ALLOWED_EXCEL_FILE_TYPE)
+        if f:
+            self.excel_file = f
+            ttk.Label(self.excel_frame, text=self.excel_file.split('/')[-1]).grid(column=0, row=1, sticky='NW', padx=5, pady=5)
+
+    def upload_to_excel(self):
+        if len(self.controller.import_pod_orgainser) > 0 and self.excel_file is not None and len(self.drawn_by.get()) != 0:
+            writter = ProjectWiseWritter(self.controller.import_pod_orgainser,
+            self.excel_file, self.drawn_by.get(), self.issue_purpose.get(), self.date_picker.get_date())
+            if not writter.check_pod_names():
+                messagebox.showerror('Incorrect Pod Name', 'Pod file names need to following format: \n "HS2-Zone-Grid Square Number-YYMMDD-Description(1ofx)-Type"')
+                return
+            if not writter.check_excel():
+                messagebox.showerror('Incorrect Number of Pod Files', '"Number of Pod Files does not match number of excel entries"')
+                return
+            writter.process()
+            messagebox.showinfo('Excel Upload Succesful', 'Succesfully upload the pod files to Excel')
+    
     def _get_active_pod_var(self, imported_file):
         """returns the active var for an imported file instance"""
         var = self.active_pod_file_vars.get(imported_file)
