@@ -10,7 +10,7 @@ a = Analysis(
     binaries=[],
     datas=[(r"C:\Users\bc975706\Documents\Software\GRID Splitter\default_files\Grids_All.csv",
     "default_files")],
-    hiddenimports=[],
+    hiddenimports=['babel.numbers'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

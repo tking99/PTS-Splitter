@@ -16,8 +16,12 @@ class PTSFileProcessor:
         self.import_orgainser = import_orgainser
         self.controller = controller
      
-    def process_pts_files(self, directory, grid_size, description, survey_type, survey_date):
-        survey_date = survey_date.strftime('%y%m%d')
+    def process_pts_files(self, directory, grid_size, description, survey_type, survey_date, end_date):
+        self.survey_date = survey_date.strftime('%y%m%d')
+        self.end_date = end_date
+        if self.end_date is not None:
+            self.end_date = self.end_date.strftime('%y%m%d')
+        
         count = {}
         GRID_CLASS = self.GRIDS[grid_size]
         for imported_file in self.import_orgainser:
@@ -49,10 +53,10 @@ class PTSFileProcessor:
                                 wgrid = self.controller.get_wgrid(e,n)
                                 if grid_size != '1000':
                                     grid_cords = wgrid.calculate_sub_grid(e, n, grid_size)
-                                    file_name = f"HS2-{wgrid.name}-{GRID_CLASS.sub_grid_name(str(grid_cords[0]),str(grid_cords[1]))}-{survey_date}{'-'+ description}"
+                                    file_name = f"HS2-{wgrid.name}-{GRID_CLASS.sub_grid_name(str(grid_cords[0]),str(grid_cords[1]))}-{self.get_survey_date()}{'-'+ description}"
                                 else:
                                     grid_cords = (wgrid.lower_x, wgrid.lower_y)
-                                    file_name = f"HS2-{wgrid.name}-{survey_date}{'-'+ description}"
+                                    file_name = f"HS2-{wgrid.name}-{self.get_survey_date()}{'-'+ description}"
                                     
                                 if grid_cords not in outfiles:
                                     file_name += f"({file_num}of{len(count)}){'-' + survey_type}.pts"
@@ -66,6 +70,12 @@ class PTSFileProcessor:
             for outfile in outfiles.values():
                 outfile.close()
 
+    def get_survey_date(self):
+        if self.end_date is None:
+            return self.survey_date
+        else:
+            return f'{self.survey_date}-{self.end_date}'
+        
     def get_line(self, s):
         line = ''
         for l in s: 
@@ -77,6 +87,7 @@ class PTSFileProcessor:
         if len(pts_line) > 2:
             return True 
         return False   
+         
                  
 class GridCreator:
     """Class to create internal w and sub grid files"""
@@ -154,7 +165,7 @@ class ProjectWiseWritter:
                     self.sheet['AJ' + n] = 'NOT APPLICABLE'
                     self.sheet['AP' + n] = self.drawn_date
                     self.sheet['AR' + n] = 'Construction'
-                    title_1 = self.sheet['AG' + n].value
+                    title_1 = self.sheet['AG' + n].valuen
                     title_2 = 'Point Cloud File'
                     title_3 = self.title_3(pod_file)
                     self.sheet['AS' + n] = f'{title_1}, {title_2}, {title_3}'

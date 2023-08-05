@@ -16,15 +16,16 @@ from navigation import MainNavbar
 
 
 class PTSSplitter(tk.Tk):
+    VERSION = 'V1.0'
     DEFAULT_GRID = 'default_files/Grids_All.csv'
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.geometry("500x500")
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
-        self.title('Grid Splitter')
+        self.title('Grid Splitter ' + self.VERSION)
         # auto read grids into system - no checking has been applied
-        self.wgrids = GridImporter.read(self.DEFAULT_GRID)
+        self.wgrids = GridImporter.read(self.resource_path(self.DEFAULT_GRID))
         self.nav_menu = MainNavbar(self, tearoff=0)
         self.config(menu=self.nav_menu)
         self.pts_files = []
@@ -34,6 +35,18 @@ class PTSSplitter(tk.Tk):
         self.grid_splitter()
         self.current_wgrid = None 
         
+    
+    @staticmethod
+    def resource_path(relative_path):
+        """ Get absolute path to resource, works for dev and for PyInstaller """
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.environ.get("_MEIPASS2",os.path.abspath("."))
+
+        return os.path.join(base_path, relative_path)
+    
     def refresh_main(self):
         if self.main_frame is not None:
             self.main_frame.grid_forget()
@@ -41,13 +54,15 @@ class PTSSplitter(tk.Tk):
     
     def grid_splitter(self):
         self.refresh_main()
-        self.main_frame = GridSplitterDisplay(self)
+        self.main_frame = GridSplitterDisplay(self, padding=(5,3))
         self.main_frame.grid(column=0, row=0, padx=5, pady=5, sticky='NESW')
+        self.title('Grid Splitter ' + self.VERSION)
 
     def pod_uploader(self):
         self.refresh_main()
-        self.main_frame = PodExcellWritterDisplay(self)
-        self.main_frame.grid(column=0, row=0, padx=5, pady=5, sticky='NESW')
+        self.main_frame = PodExcellWritterDisplay(self, padding=(5,3))
+        self.main_frame.grid(column=0, row=0, sticky='NESW')
+        self.title('Pod Uploader ' + self.VERSION)
        
     def get_wgrid(self, x, y):
         # check first if current grid is correct and probably will be
@@ -68,7 +83,7 @@ class PTSSplitter(tk.Tk):
             exit()  
       
      
-end_trial = datetime.strptime('01-08-2023', '%d-%m-%Y')
+end_trial = datetime.strptime('01-01-2024', '%d-%m-%Y')
 
 if __name__ == "__main__":
     if datetime.today() < end_trial:

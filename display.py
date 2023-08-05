@@ -16,7 +16,7 @@ class GridSplitterDisplay(ttk.Frame):
     ALLOWED_FILE_TYPES = (('PTS', '.pts'), ('XYZ', '.xyz'), ('CSV', '.csv'), ('TXT', '.txt'))
     ALLOWED_POD_FILE_TYPE = (('POD', '.pod'), )
     GRID_OPTIONS = ('1000', '500', '100', '50', '20') 
-    SURVEY_TYPES = ('AsBuilt', 'Topo')
+    SURVEY_TYPES = ('AsBuilt', 'Asbuilt (Control Not Final)', 'Topo')
     ISSUE_PURPOSE = ('FOR INFORMATION', 'ISSUED FOR HANDOVER')
 
     def __init__(self, controller, *args, **kwargs):
@@ -25,7 +25,6 @@ class GridSplitterDisplay(ttk.Frame):
         self.import_frame = ttk.Frame(self)
         self.import_frame.grid(column=0, row=0, sticky='NW')
         self.pts_processor = PTSFileProcessor(self.controller.import_orgainser, self.controller)
-
         ttk.Label(self.import_frame, text='Grid Splitter', font=("Arial", 12)).grid(column=0, row=0, padx=5, pady=5, sticky='NW')
         ttk.Label(self.import_frame, text='Step 1: Select ASCII Files to Split:').grid(column=0, row=1, padx=5, pady=5)
         ttk.Button(self.import_frame, text='Select', command=self.import_pts_files).grid(column=1, row=1, padx=5, pady=5)
@@ -40,6 +39,7 @@ class GridSplitterDisplay(ttk.Frame):
         ttk.Label(self.options_frame, text='Step 2: Select Split Method').grid(column=0, row=0, padx=5, pady=5, sticky='NW') 
         self.split_by_grid = tk.BooleanVar(value=True)
         self.split_by_mb = tk.BooleanVar(value=False)
+        self.end_date = tk.BooleanVar(value=False)
         
         self.option_choices_frame = ttk.Frame(self.options_frame)
         self.option_choices_frame.grid(column=0, row=1, sticky='NW')
@@ -57,7 +57,7 @@ class GridSplitterDisplay(ttk.Frame):
 
         ttk.Checkbutton(self.option_choices_frame, variable=self.split_by_mb, onvalue=True,
             offvalue=False, state= "disabled").grid(column=0, row=1, pady=5, padx=5, sticky='NW')
-        ttk.Label(self.option_choices_frame, text='Split by File Size (MB)').grid(column=1, row=1)
+        ttk.Label(self.option_choices_frame, text='Split by File Size (MB)').grid(column=1, row=1, padx=5 ,pady=5)
         
         ttk.Separator(self, orient=tk.HORIZONTAL).grid(column=0, row=4, columnspan=10, sticky='ew')
         
@@ -67,22 +67,38 @@ class GridSplitterDisplay(ttk.Frame):
 
         self.description = tk.StringVar() 
         self.survey_type = tk.StringVar()
-        ttk.Label(description_frame, text='Survey Description: ').grid(column=0, row=1, sticky='NW', pady=5, padx=5)
-        ttk.Entry(description_frame, width=30, textvariable=self.description).grid(
-            column=1, row=1, sticky='NW', pady=5, padx=5)
-        ttk.Label(description_frame, text='Survey Type: ').grid(column=0, row=2, sticky='NW', pady=5, padx=5)
+
+        type_descrip_frame = ttk.Frame(description_frame)
+        type_descrip_frame.grid(column=0, row=1, sticky='NW', pady=5, padx=5)
+        ttk.Label(type_descrip_frame, text='Survey Description: ').grid(column=0, row=0, sticky='NW', pady=5, padx=5)
+        ttk.Entry(type_descrip_frame, width=30, textvariable=self.description).grid(
+            column=1, row=0, sticky='NW', pady=5, padx=5)
+
+        type_frame = ttk.Frame(description_frame)
+        type_frame.grid(column=0, row=2, sticky='NW', pady=5, padx=5)
+        
+        ttk.Label(type_frame, text='Survey Type: ').grid(column=0, row=0, sticky='NW', pady=5, padx=5)
         survey_type_menu = ttk.OptionMenu(
-            description_frame,
+            type_frame,
             self.survey_type,
             self.SURVEY_TYPES[0],
             *self.SURVEY_TYPES)
-        survey_type_menu.grid(column=1, row=2, sticky='NW', pady=5, padx=5)
+        survey_type_menu.grid(column=1, row=0, sticky='NW', pady=5, padx=5)
 
-        ttk.Label(description_frame, text='Date of Survey: ').grid(column=0, row=3, sticky='NW', pady=5, padx=5)
-        self.date_picker = DateEntry(description_frame, width=12, background='darkblue',
+        date_frame = ttk.Frame(description_frame)
+        date_frame.grid(column=0, row=3, sticky='NW', pady=5, padx=5)
+        
+        ttk.Label(date_frame, text='Date of Survey: ').grid(column=0, row=0, sticky='NW', pady=5, padx=5)
+        self.date_picker = DateEntry(date_frame, width=12, background='darkblue',
                     foreground='white', borderwidth=2)
-        self.date_picker.grid(column=1, row=3, sticky='NW', pady=5, padx=5)
-      
+        self.date_picker.grid(column=1, row=0, sticky='NW', pady=5, padx=5)
+        ttk.Checkbutton(date_frame, variable=self.end_date, onvalue=True,
+            offvalue=False, command=self.toggle_end_date).grid(column=2, row=0, pady=5, padx=(5,0), sticky='NW')
+        ttk.Label(date_frame, text='End Date:').grid(column=3, row=0, sticky='NW', pady=5)
+        self.end_date_picker = DateEntry(date_frame, width=12, background='darkblue',
+            foreground='white', boarderwidth=2, state='disabled')
+        self.end_date_picker.grid(column=4, row=0, sticky='NW', pady=5, padx=5)
+       
         ttk.Separator(self, orient=tk.HORIZONTAL).grid(column=0, row=6, columnspan=10, sticky='ew')
         
         self.export_frame = ttk.Frame(self)
@@ -90,6 +106,14 @@ class GridSplitterDisplay(ttk.Frame):
         ttk.Button(self.export_frame, text='SPLIT FILES', command=self.split,
             padding=(25,10)).grid(column=0, row=1, sticky='NW',
             pady=20, padx=5) 
+
+    def toggle_end_date(self):
+        if self.end_date.get():
+            self.end_date_picker.config(state='normal')
+            self.end_date_picker.set_date(dt.date.today())
+
+        else:
+            self.end_date_picker.config(state='disabled')
 
     def split(self):
         """splits the files based on passed in grid size"""
@@ -102,13 +126,18 @@ class GridSplitterDisplay(ttk.Frame):
                 self.progressbar.start()
                 # main task
                 t = Thread(target=lambda: self.pts_processor.process_pts_files(directory, self.grid_size.get(), self.description.get(), self.survey_type.get(),
-                    self.date_picker.get_date()),)
+                    self.date_picker.get_date(), self.get_end_date()),)
                 t.start()
                 self.schedule_check(t)
         else:
             tk.messagebox.showerror(title='No Files Uploaded', message='Please upload ASCII Files')
 
         
+    def get_end_date(self):
+        if self.end_date.get():
+            return self.end_date_picker.get_date()
+        return None
+    
     def schedule_check(self, t):
         self.after(1000, self.check_if_done, t)
 
@@ -151,8 +180,6 @@ class GridSplitterDisplay(ttk.Frame):
                 onvalue=True, offvalue=False, command=f.file_active_toggle).grid(column=0, row=row, sticky='NW')
             ttk.Label(self.import_tree_display, text=f.file_name).grid(column=1, row=row, sticky='NW')
 
-    
- 
     def remove_files(self):
         """Removes the selected files from the project"""
         self.controller.import_orgainser.remove_non_active_files()
